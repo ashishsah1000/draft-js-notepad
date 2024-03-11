@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import ReactDOM from "react-dom";
 import {
   Editor,
@@ -13,19 +13,24 @@ export default function MyEditor() {
   const [editorState, setEditorState] = React.useState(() =>
     EditorState.createEmpty()
   );
+  const [blockKey, setblockKey] = React.useState(null);
+  const [style, setstyle] = React.useState(null);
   const contentState = editorState.getCurrentContent();
 
   const contentAsText = contentState.getPlainText();
   console.log(contentAsText);
   function setFontToBold() {
-    const newEditorState = RichUtils.toggleInlineStyle(editorState, "BOLD");
-    setEditorState(newEditorState);
+    setEditorState((editorState) =>
+      RichUtils.toggleInlineStyle(editorState, "BOLD")
+    );
   }
   function setFontToItalic() {
     setEditorState(RichUtils.toggleInlineStyle(editorState, "ITALIC"));
   }
   function setFontToHeadingOne() {
-    setEditorState(RichUtils.toggleBlockType(editorState, "header-one"));
+    setEditorState((editorState) =>
+      RichUtils.toggleBlockType(editorState, "header-one")
+    );
   }
   function setFontToHeadingTwo() {
     setEditorState(RichUtils.toggleBlockType(editorState, "header-two"));
@@ -44,43 +49,53 @@ export default function MyEditor() {
     );
 
     if (currentBlock.getText().startsWith("# ")) {
+      setblockKey(selectionState.getStartKey());
       // Remove the "# " substring from the beginning of the block
-
-      const selection = SelectionState.createEmpty(currentBlock.getKey()).merge(
-        {
-          anchorOffset: 0,
-          focusOffset: 2,
-        }
-      );
-
-      // Modify content state
       const updatedContentState = Modifier.replaceText(
         contentState,
-        selection,
-        currentBlock.getText().substring(2) // Remove the "# " substring
+        selectionState.merge({
+          anchorOffset: 0,
+          focusOffset: 2,
+        }),
+        ""
       );
-      // Change the block type to 'header-one'
-      const updatedContentStateWithHeader = Modifier.setBlockType(
+      // Update the editor state with the new content
+      const newEditorState = EditorState.push(
+        editorState,
         updatedContentState,
-        selection,
-        "header-one"
+        "remove-range"
       );
-
-      // Update editor state without pushing the content update
-      setEditorState(
-        EditorState.set(newEditorState, {
-          currentContent: updatedContentStateWithHeader,
-        })
-      );
+      setEditorState(() => newEditorState);
+      setFontToHeadingOne();
     } else {
-      const newContentState = Modifier.setBlockType(
-        contentState,
-        selectionState,
-        "unstyled"
-      );
-      setEditorState(newEditorState);
+      if (blockKey == selectionState.getStartKey()) {
+        setEditorState(newEditorState);
+      } else {
+        console.log(
+          "this is what it looks like",
+          currentBlock.getText().length
+        );
+        if (currentBlock.getText().length > 1) {
+          setEditorState(newEditorState);
+        } else {
+          const newContentState = Modifier.setBlockType(
+            contentState,
+            selectionState,
+            "unstyled"
+          );
+          setEditorState(
+            EditorState.set(newEditorState, {
+              currentContent: newContentState,
+            })
+          );
+        }
+      }
     }
   };
+  useEffect(() => {
+    if (style === "bold") {
+    }
+  }, [style]);
 
   return (
     <div className="w-[80vw] min:h-20 m-auto bg-gray-300 p-4 rounded mt-10">
