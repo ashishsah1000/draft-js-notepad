@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import {
   Editor,
@@ -6,121 +6,365 @@ import {
   RichUtils,
   Modifier,
   SelectionState,
+  ContentBlock,
+  genKey,
 } from "draft-js";
 import "draft-js/dist/Draft.css";
+import { BiBold, BiCodeBlock, BiHeading, BiItalic } from "react-icons/bi";
+import {
+  AiOutlineBold,
+  AiOutlineCode,
+  AiOutlineItalic,
+  AiOutlineOrderedList,
+  AiOutlineUnderline,
+  AiOutlineUnorderedList,
+} from "react-icons/ai";
+import { LuHeading1 } from "react-icons/lu";
 
 export default function MyEditor() {
   const [editorState, setEditorState] = React.useState(() =>
     EditorState.createEmpty()
   );
+  const styleMap = {
+    STRIKETHROUGH: {
+      textDecoration: "line-through",
+    },
+    REDLINE: {
+      borderTop: "2px dashed rgba(222,70,22,1)",
+      display: "block",
+      width: "100% !important",
+      paddingTop: "8px",
+    },
+  };
   const [blockKey, setblockKey] = React.useState(null);
-  const [style, setstyle] = React.useState(null);
+  const [headingOn, setheadingOn] = React.useState(false);
   const contentState = editorState.getCurrentContent();
+  const [boldState, setboldState] = useState(false);
 
-  const contentAsText = contentState.getPlainText();
-  console.log(contentAsText);
+  // removes the # symbol
+  function headingFormater(contentState, selectionState) {
+    const updatedContentState = Modifier.replaceText(
+      contentState,
+      selectionState.merge({
+        anchorOffset: 0,
+        focusOffset: 2,
+      }),
+      ""
+    );
+    // Update the editor state with the new content
+    const newEditorState = EditorState.push(
+      editorState,
+      updatedContentState,
+      "remove-range"
+    );
+    setEditorState(() => newEditorState);
+  }
+  function boldFormater(contentState, selectionState, boldPatternIndex) {
+    const startOffset = boldPatternIndex;
+    const endOffset = boldPatternIndex + 3; // Length of " ** "
+    console.log("this is bold pattern index", startOffset, endOffset);
+
+    // Remove the " ** " pattern from the block text
+    const updatedContentState = Modifier.replaceText(
+      contentState,
+      selectionState.merge({
+        anchorOffset: startOffset,
+        focusOffset: endOffset,
+      }),
+      ""
+    );
+    // Update the editor state with the new content
+    const newEditorState = EditorState.push(
+      editorState,
+      updatedContentState,
+      "remove-bold-range"
+    );
+    setEditorState(() => newEditorState);
+  }
+
   function setFontToBold() {
     setEditorState((editorState) =>
       RichUtils.toggleInlineStyle(editorState, "BOLD")
     );
   }
+  function setFontToUnderline() {
+    setEditorState((editorState) =>
+      RichUtils.toggleInlineStyle(editorState, "UNDERLINE")
+    );
+  }
   function setFontToItalic() {
     setEditorState(RichUtils.toggleInlineStyle(editorState, "ITALIC"));
+  }
+  function setNewBlock() {
+    const contentState = editorState.getCurrentContent();
+    const selectionState = editorState.getSelection();
+
+    // Get the current key
+    const currentKey = selectionState.getStartKey();
+
+    // Get the next block key
+    const nextBlockKey = contentState.getKeyAfter(currentKey);
+
+    // If next block key exists
+    if (nextBlockKey) {
+      // Change the block type of the next block
+      const newContentState = Modifier.setBlockType(
+        editorState.getCurrentContent(),
+        editorState.getCurrentContent().getSelectionAfter(),
+        "div"
+      );
+
+      // Update editor state with the new content state
+      setEditorState(() =>
+        EditorState.push(editorState, newContentState, "paragraph")
+      );
+    }
   }
   function setFontToHeadingOne() {
     setEditorState((editorState) =>
       RichUtils.toggleBlockType(editorState, "header-one")
     );
   }
+  function setFontToCodeblock() {
+    setEditorState((editorState) =>
+      RichUtils.toggleBlockType(editorState, "code-block")
+    );
+  }
   function setFontToHeadingTwo() {
     setEditorState(RichUtils.toggleBlockType(editorState, "header-two"));
   }
-  function setFontToHeadingTwo() {
-    setEditorState(RichUtils.toggleBlockType(editorState, "header-three"));
+  function setBlockToUnorderedList() {
+    setEditorState(
+      RichUtils.toggleBlockType(editorState, "unordered-list-item")
+    );
   }
+  function setBlockToOrderedList() {
+    setEditorState(RichUtils.toggleBlockType(editorState, "ordered-list-item"));
+  }
+  function setTextToUnderline() {
+    setEditorState(RichUtils.toggleBlockType(editorState, "UNDERLINE"));
+  }
+  const addRedLine = () => {
+    console.log("setting bold");
+    setEditorState((editorState) =>
+      RichUtils.toggleInlineStyle(editorState, "REDLINE")
+    );
+  };
+  const handleReturn = (e, newEditorState) => {
+    if (headingOn) {
+      console.log("repressing the button");
+      setheadingOn(false);
+      setFontToHeadingOne();
+    }
+  };
 
-  const handleInputChange = (newEditorState) => {
-    let contentState = newEditorState.getCurrentContent();
-    let selectionState = newEditorState.getSelection();
-
-    // Get the current selected block
+  const applyUnstyled = () => {
+    const contentState = editorState.getCurrentContent();
+    const selectionState = editorState.getSelection();
     const currentBlock = contentState.getBlockForKey(
       selectionState.getStartKey()
     );
 
+    // Apply unstyled style to the block
+    const updatedContentStateWithUnstyled = Modifier.setBlockType(
+      contentState,
+      selectionState,
+      "unstyled"
+    );
+
+    setEditorState(
+      EditorState.set(editorState, {
+        currentContent: updatedContentStateWithUnstyled,
+      })
+    );
+  };
+
+  const handleKeyDown = (e) => {
+    // Check if the Enter key is pressed
+    if (e.key === "Enter") {
+      e.preventDefault(); // Prevent the default behavior of the Enter key
+      applyUnstyled(); // Apply the unstyled block type
+    }
+  };
+
+  const handleInputChange = (newEditorState) => {
+    setEditorState(() => newEditorState);
+    let contentState = newEditorState.getCurrentContent();
+    let selectionState = newEditorState.getSelection();
+    var end = selectionState.getEndOffset();
+    // Get the current selected block
+    const currentBlock = contentState.getBlockForKey(
+      selectionState.getStartKey()
+    );
+    const blockText = currentBlock.getText();
+
+    const boldPatternIndex = currentBlock.getText().indexOf("** ");
+    if (boldPatternIndex !== -1) {
+      boldFormater(contentState, selectionState, boldPatternIndex);
+      setFontToBold();
+    }
+
     if (currentBlock.getText().startsWith("# ")) {
       setblockKey(selectionState.getStartKey());
       // Remove the "# " substring from the beginning of the block
-      const updatedContentState = Modifier.replaceText(
-        contentState,
+      headingFormater(contentState, selectionState);
+      setheadingOn(!headingOn);
+      setFontToHeadingOne();
+    }
+
+    // handle if the ** comes in
+    let boldIndex = blockText.indexOf("* ");
+    if (boldIndex > -1) {
+      selectionState.set("focusOffset", end - 2);
+      const newContentState = Modifier.replaceText(
+        editorState.getCurrentContent(),
         selectionState.merge({
-          anchorOffset: 0,
-          focusOffset: 2,
+          anchorOffset: boldIndex,
+          focusOffset: boldIndex + 4,
         }),
         ""
       );
-      // Update the editor state with the new content
-      const newEditorState = EditorState.push(
+      const newFormatedEditorState = EditorState.push(
         editorState,
-        updatedContentState,
+        newContentState,
         "remove-range"
       );
-      setEditorState(() => newEditorState);
-      setFontToHeadingOne();
-    } else {
-      if (blockKey == selectionState.getStartKey()) {
-        setEditorState(newEditorState);
-      } else {
-        console.log(
-          "this is what it looks like",
-          currentBlock.getText().length
-        );
-        if (currentBlock.getText().length > 1) {
-          setEditorState(newEditorState);
-        } else {
-          const newContentState = Modifier.setBlockType(
-            contentState,
-            selectionState,
-            "unstyled"
-          );
-          setEditorState(
-            EditorState.set(newEditorState, {
-              currentContent: newContentState,
-            })
-          );
-        }
-      }
+      setEditorState(() => newFormatedEditorState);
+      setFontToBold();
+    }
+
+    let redLineIndex = blockText.indexOf("** ");
+    if (redLineIndex > -1) {
+      const newContentState = Modifier.replaceText(
+        editorState.getCurrentContent(),
+        selectionState.merge({
+          anchorOffset: 0,
+          focusOffset: 3,
+        }),
+        " "
+      );
+      const newFormatedEditorState = EditorState.push(
+        editorState,
+        newContentState,
+        "remove-text"
+      );
+      setEditorState(() => newFormatedEditorState);
+      addRedLine();
+    }
+    // handle for a single *
+    let underlineIndex = blockText.indexOf("*** ");
+    if (underlineIndex > -1) {
+      selectionState.set("focusOffset", end - 2);
+      const newContentState = Modifier.replaceText(
+        editorState.getCurrentContent(),
+        selectionState.merge({
+          anchorOffset: underlineIndex,
+          focusOffset: underlineIndex + 4,
+        }),
+        ""
+      );
+      const newFormatedEditorState = EditorState.push(
+        editorState,
+        newContentState,
+        "remove-range"
+      );
+      setEditorState(() => newFormatedEditorState);
+      setFontToUnderline();
+    }
+    let codeIndex = blockText.indexOf("``` ");
+    if (codeIndex > -1) {
+      selectionState.set("focusOffset", end - 2);
+      const newContentState = Modifier.replaceText(
+        editorState.getCurrentContent(),
+        selectionState.merge({
+          anchorOffset: codeIndex,
+          focusOffset: codeIndex + 4,
+        }),
+        ""
+      );
+      const newFormatedEditorState = EditorState.push(
+        editorState,
+        newContentState,
+        "remove-range"
+      );
+      setEditorState(() => newFormatedEditorState);
+      setFontToCodeblock();
     }
   };
   useEffect(() => {
-    if (style === "bold") {
+    if (boldState) {
+      setFontToBold();
     }
-  }, [style]);
+  }, []);
 
   return (
-    <div className="w-[80vw] min:h-20 m-auto bg-gray-300 p-4 rounded mt-10">
-      <div className="flex gap-2 border px-4 py-1 border-gray-700">
-        <button
-          className="px-2 py-1 text-xs shadow-lg rounded bg-teal-600 text-gray-200 font-bold"
-          onClick={setFontToBold}
-        >
-          Bold
-        </button>
-        <button
-          className="px-2 py-1 text-xs shadow-lg rounded bg-teal-600 text-gray-200 font-bold"
-          onClick={setFontToItalic}
-        >
-          Italic
-        </button>
-        <button
-          className="px-2 py-1 text-xs shadow-lg rounded bg-teal-600 text-gray-200 font-bold"
-          onClick={setFontToHeadingOne}
-        >
-          Heading
-        </button>
-      </div>
-      <div className="mt-4">
-        <Editor editorState={editorState} onChange={handleInputChange} />
+    <div className="w-[80vw] h-[90vh] m-auto  p-4 rounded mt-20 text-gray-500">
+      <div className="mt-4 h-full p-2 flex flex-col">
+        <div className="heading my-4">
+          <input
+            type="text"
+            name=""
+            id=""
+            placeholder="Title of the document..."
+            className="text-3xl outline-none text-gray-700 font-bold uppercase w-full"
+          />
+        </div>
+        <span className="font-thin text-sm text-gray-400">Your notepad</span>
+        <div className="flex justify-end   px-4 py-1 ">
+          <button
+            className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
+            onClick={setFontToBold}
+          >
+            <AiOutlineBold size={18} />
+          </button>
+          <button
+            className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
+            onClick={setFontToItalic}
+          >
+            <AiOutlineItalic size={18} />
+          </button>
+          <button
+            className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
+            onClick={setFontToHeadingOne}
+          >
+            <LuHeading1 size={20} />
+          </button>
+          <button
+            className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
+            onClick={setFontToUnderline}
+          >
+            <AiOutlineUnderline size={20} />
+          </button>
+          <button
+            className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
+            onClick={setBlockToUnorderedList}
+          >
+            <AiOutlineUnorderedList size={20} />
+          </button>
+          <button
+            className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
+            onClick={setBlockToOrderedList}
+          >
+            <AiOutlineOrderedList size={20} />
+          </button>
+          <button
+            className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
+            onClick={setFontToCodeblock}
+          >
+            <AiOutlineCode size={20} />
+          </button>
+        </div>
+
+        <div className="mt-8 h-[60vh]  overflow-y-scroll ">
+          <Editor
+            editorState={editorState}
+            onChange={handleInputChange}
+            handleReturn={handleReturn}
+            handleKeyCommand={handleKeyDown}
+            customStyleMap={styleMap}
+            placeholder="Start writing here"
+          />
+        </div>
       </div>
     </div>
   );
