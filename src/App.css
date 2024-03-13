@@ -31,4 +31,7 @@
     border-radius: 5px;
     overflow-x: auto;
   }
+  figure {
+    border-bottom: 2px dashed red !important;
+  }
 }

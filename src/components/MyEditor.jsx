@@ -1,11 +1,18 @@
 import React, { useEffect, useState } from "react";
 
-import { Editor, EditorState, RichUtils, Modifier } from "draft-js";
+import {
+  Editor,
+  EditorState,
+  RichUtils,
+  Modifier,
+  AtomicBlockUtils,
+} from "draft-js";
 import "draft-js/dist/Draft.css";
 import {
   AiOutlineBold,
   AiOutlineCode,
   AiOutlineItalic,
+  AiOutlineLine,
   AiOutlineOrderedList,
   AiOutlineUnderline,
   AiOutlineUnorderedList,
@@ -53,6 +60,7 @@ export default function MyEditor({ updateMainState = () => {} }) {
       "remove-range"
     );
     setEditorState(() => newEditorState);
+    return newEditorState;
   }
   function boldFormater(contentState, selectionState, boldPatternIndex) {
     const startOffset = boldPatternIndex;
@@ -125,9 +133,7 @@ export default function MyEditor({ updateMainState = () => {} }) {
       RichUtils.toggleBlockType(editorState, "code-block")
     );
   }
-  function setFontToHeadingTwo() {
-    setEditorState(RichUtils.toggleBlockType(editorState, "header-two"));
-  }
+
   function setBlockToUnorderedList() {
     setEditorState(
       RichUtils.toggleBlockType(editorState, "unordered-list-item")
@@ -136,50 +142,31 @@ export default function MyEditor({ updateMainState = () => {} }) {
   function setBlockToOrderedList() {
     setEditorState(RichUtils.toggleBlockType(editorState, "ordered-list-item"));
   }
-  function setTextToUnderline() {
-    setEditorState(RichUtils.toggleBlockType(editorState, "UNDERLINE"));
-  }
-  const addRedLine = () => {
-    console.log("setting bold");
-    setEditorState((editorState) =>
-      RichUtils.toggleInlineStyle(editorState, "REDLINE")
-    );
-  };
-  const handleReturn = (e, newEditorState) => {
-    if (headingOn) {
-      console.log("repressing the button");
-      setheadingOn(false);
-      setFontToHeadingOne();
-    }
-  };
+  // function setTextToUnderline() {
+  //   setEditorState(RichUtils.toggleBlockType(editorState, "UNDERLINE"));
+  // }
+  // const addRedLine = () => {
+  //   console.log("setting bold");
+  //   setEditorState((editorState) =>
+  //     RichUtils.toggleInlineStyle(editorState, "REDLINE")
+  //   );
+  // };
 
-  const applyUnstyled = () => {
-    const contentState = editorState.getCurrentContent();
-    const selectionState = editorState.getSelection();
-    const currentBlock = contentState.getBlockForKey(
-      selectionState.getStartKey()
+  const addDivWithBorder = (currentEditor) => {
+    const contentState = currentEditor.getCurrentContent();
+    const contentStateWithEntity = contentState.createEntity(
+      "DIV",
+      "IMMUTABLE",
+      { className: "redBorder " }
     );
-
-    // Apply unstyled style to the block
-    const updatedContentStateWithUnstyled = Modifier.setBlockType(
-      contentState,
-      selectionState,
-      "unstyled"
-    );
+    const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+    const newEditorState = EditorState.set(currentEditor, {
+      currentContent: contentStateWithEntity,
+    });
 
     setEditorState(
-      EditorState.set(editorState, {
-        currentContent: updatedContentStateWithUnstyled,
-      })
+      AtomicBlockUtils.insertAtomicBlock(newEditorState, entityKey, " ")
     );
-  };
-
-  const handleKeyDown = (e) => {
-    // Check if the Enter key is pressed
-    if (e.key === "Enter") {
-      e.preventDefault(); // Prevent the default behavior of the Enter key
-      applyUnstyled(); // Apply the unstyled block type
-    }
   };
 
   const handleInputChange = (newEditorState) => {
@@ -191,8 +178,9 @@ export default function MyEditor({ updateMainState = () => {} }) {
     const currentBlock = contentState.getBlockForKey(
       selectionState.getStartKey()
     );
+    setblockKey(() => selectionState.getStartKey());
     const blockText = currentBlock.getText();
-
+    console.log("this is changed", blockKey);
     const boldPatternIndex = currentBlock.getText().indexOf("** ");
     if (boldPatternIndex !== -1) {
       boldFormater(contentState, selectionState, boldPatternIndex);
@@ -244,7 +232,10 @@ export default function MyEditor({ updateMainState = () => {} }) {
         "remove-text"
       );
       setEditorState(() => newFormatedEditorState);
-      addRedLine();
+      // addRedLine();
+      headingFormater(contentState, selectionState);
+
+      addDivWithBorder(headingFormater(contentState, selectionState));
     }
     // handle for a single *
     let underlineIndex = blockText.indexOf("*** ");
@@ -359,6 +350,12 @@ export default function MyEditor({ updateMainState = () => {} }) {
             >
               <AiOutlineCode size={20} />
             </button>
+            <button
+              className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
+              onClick={() => addDivWithBorder(editorState)}
+            >
+              <AiOutlineLine size={20} />
+            </button>
           </div>
         </div>
 
@@ -366,10 +363,9 @@ export default function MyEditor({ updateMainState = () => {} }) {
           <Editor
             editorState={editorState}
             onChange={handleInputChange}
-            handleReturn={handleReturn}
-            handleKeyCommand={handleKeyDown}
             customStyleMap={styleMap}
             placeholder="Start writing here"
+            // handleReturn={handleReturn}
           />
         </div>
       </div>
