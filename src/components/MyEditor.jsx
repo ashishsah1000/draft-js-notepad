@@ -1,16 +1,7 @@
 import React, { useEffect, useState } from "react";
-import ReactDOM from "react-dom";
-import {
-  Editor,
-  EditorState,
-  RichUtils,
-  Modifier,
-  SelectionState,
-  ContentBlock,
-  genKey,
-} from "draft-js";
+
+import { Editor, EditorState, RichUtils, Modifier } from "draft-js";
 import "draft-js/dist/Draft.css";
-import { BiBold, BiCodeBlock, BiHeading, BiItalic } from "react-icons/bi";
 import {
   AiOutlineBold,
   AiOutlineCode,
@@ -20,8 +11,12 @@ import {
   AiOutlineUnorderedList,
 } from "react-icons/ai";
 import { LuHeading1 } from "react-icons/lu";
+import {
+  loadEditorStateFromLocalStorage,
+  retrieveEditorDocumentTitle,
+} from "../local/storage";
 
-export default function MyEditor() {
+export default function MyEditor({ updateMainState = () => {} }) {
   const [editorState, setEditorState] = React.useState(() =>
     EditorState.createEmpty()
   );
@@ -39,7 +34,7 @@ export default function MyEditor() {
   const [blockKey, setblockKey] = React.useState(null);
   const [headingOn, setheadingOn] = React.useState(false);
   const contentState = editorState.getCurrentContent();
-  const [boldState, setboldState] = useState(false);
+  const [title, settitle] = useState("");
 
   // removes the # symbol
   function headingFormater(contentState, selectionState) {
@@ -290,15 +285,22 @@ export default function MyEditor() {
       setEditorState(() => newFormatedEditorState);
       setFontToCodeblock();
     }
+    updateMainState(editorState, title);
   };
   useEffect(() => {
-    if (boldState) {
-      setFontToBold();
+    const getStoredTitle = retrieveEditorDocumentTitle();
+    console.log(getStoredTitle);
+    if (getStoredTitle != null) {
+      settitle(getStoredTitle);
+    }
+    const getStoredEditorState = loadEditorStateFromLocalStorage();
+    if (getStoredEditorState != undefined) {
+      setEditorState(getStoredEditorState);
     }
   }, []);
 
   return (
-    <div className="w-[80vw] h-[90vh] m-auto  p-4 rounded mt-20 text-gray-500">
+    <div className="sm:w-[95w] md:w-[80vw] h-[90vh] m-auto  p-4 rounded mt-20 text-gray-500 dark:text-gray-300">
       <div className="mt-4 h-full p-2 flex flex-col">
         <div className="heading my-4">
           <input
@@ -306,53 +308,58 @@ export default function MyEditor() {
             name=""
             id=""
             placeholder="Title of the document..."
-            className="text-3xl outline-none text-gray-700 font-bold uppercase w-full"
+            className="sm:text-2xl md:text-3xl outline-none text-gray-700 dark:text-gray-400 dark:bg-gray-950 font-extrabold uppercase w-full"
+            onChange={(e) => settitle(e.target.value)}
+            defaultValue={title.length > 0 ? title : ""}
           />
         </div>
         <span className="font-thin text-sm text-gray-400">Your notepad</span>
         <div className="flex justify-end   px-4 py-1 ">
-          <button
-            className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
-            onClick={setFontToBold}
-          >
-            <AiOutlineBold size={18} />
-          </button>
-          <button
-            className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
-            onClick={setFontToItalic}
-          >
-            <AiOutlineItalic size={18} />
-          </button>
-          <button
-            className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
-            onClick={setFontToHeadingOne}
-          >
-            <LuHeading1 size={20} />
-          </button>
-          <button
-            className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
-            onClick={setFontToUnderline}
-          >
-            <AiOutlineUnderline size={20} />
-          </button>
-          <button
-            className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
-            onClick={setBlockToUnorderedList}
-          >
-            <AiOutlineUnorderedList size={20} />
-          </button>
-          <button
-            className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
-            onClick={setBlockToOrderedList}
-          >
-            <AiOutlineOrderedList size={20} />
-          </button>
-          <button
-            className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
-            onClick={setFontToCodeblock}
-          >
-            <AiOutlineCode size={20} />
-          </button>
+          <div className="flex-grow"></div>
+          <div>
+            <button
+              className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
+              onClick={setFontToBold}
+            >
+              <AiOutlineBold size={18} />
+            </button>
+            <button
+              className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
+              onClick={setFontToItalic}
+            >
+              <AiOutlineItalic size={18} />
+            </button>
+            <button
+              className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
+              onClick={setFontToHeadingOne}
+            >
+              <LuHeading1 size={20} />
+            </button>
+            <button
+              className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
+              onClick={setFontToUnderline}
+            >
+              <AiOutlineUnderline size={20} />
+            </button>
+            <button
+              className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
+              onClick={setBlockToUnorderedList}
+            >
+              <AiOutlineUnorderedList size={20} />
+            </button>
+            <button
+              className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
+              onClick={setBlockToOrderedList}
+            >
+              <AiOutlineOrderedList size={20} />
+            </button>
+            <button
+              className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
+              onClick={setFontToCodeblock}
+            >
+              <AiOutlineCode size={20} />
+            </button>
+          </div>
         </div>
 
         <div className="mt-8 h-[60vh]  overflow-y-scroll ">
