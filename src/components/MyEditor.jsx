@@ -109,11 +109,14 @@ export default function MyEditor({ updateMainState = () => {} }) {
   const convertToFancy = () => {
     if (!flag) {
       flag = true;
+      console.log("setting redfont")
       setEditorState((editorState) =>
         RichUtils.toggleInlineStyle(editorState, "REDFONT")
       );
     } else {
       flag = false;
+      console.log("setting blackfont")
+
       setEditorState((editorState) =>
         RichUtils.toggleInlineStyle(editorState, "BLACKFONT")
       );
@@ -389,7 +392,7 @@ export default function MyEditor({ updateMainState = () => {} }) {
         </div>
 
         <div className="mt-8 h-[60vh]  overflow-y-scroll " style={{
-          color:"gray"
+          color:"green"
         }}>
           <Editor
             editorState={editorState}
