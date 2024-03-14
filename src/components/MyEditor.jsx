@@ -106,19 +106,19 @@ export default function MyEditor({ updateMainState = () => {} }) {
   function setFontToItalic() {
     setEditorState(RichUtils.toggleInlineStyle(editorState, "ITALIC"));
   }
-  const convertToFancy = () => {
+  const convertToFancy = (newEditorState) => {
     if (!flag) {
       flag = true;
       console.log("setting redfont")
-      setEditorState((editorState) =>
-        RichUtils.toggleInlineStyle(editorState, "REDFONT")
+      setEditorState(() =>
+        RichUtils.toggleInlineStyle(newEditorState, "REDFONT")
       );
     } else {
       flag = false;
       console.log("setting blackfont")
 
-      setEditorState((editorState) =>
-        RichUtils.toggleInlineStyle(editorState, "BLACKFONT")
+      setEditorState(() =>
+        RichUtils.toggleInlineStyle(newEditorState, "BLACKFONT")
       );
     }
     // setEditorState(RichUtils.toggleBlockType(editorState, "header-one"));
@@ -261,7 +261,7 @@ export default function MyEditor({ updateMainState = () => {} }) {
      // headingFormater(contentState, selectionState);
 
       // addDivWithBorder(headingFormater(contentState, selectionState));
-      convertToFancy();
+      convertToFancy(newFormatedEditorState);
     }
     // handle for a single *
     let underlineIndex = blockText.indexOf("*** ");
@@ -384,7 +384,7 @@ export default function MyEditor({ updateMainState = () => {} }) {
             </button>
             <button
               className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
-              onClick={() => convertToFancy()}
+              onClick={() => convertToFancy(editorState)}
             >
               <AiTwotoneWarning  size={20} />
             </button>
