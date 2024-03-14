@@ -16,6 +16,7 @@ import {
   AiOutlineOrderedList,
   AiOutlineUnderline,
   AiOutlineUnorderedList,
+  AiTwotoneWarning 
 } from "react-icons/ai";
 import { LuHeading1 } from "react-icons/lu";
 import {
@@ -377,6 +378,12 @@ export default function MyEditor({ updateMainState = () => {} }) {
               onClick={() => addDivWithBorder(editorState)}
             >
               <AiOutlineLine size={20} />
+            </button>
+            <button
+              className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
+              onClick={() => convertToFancy()}
+            >
+              <AiTwotoneWarning  size={20} />
             </button>
           </div>
         </div>
