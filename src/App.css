@@ -32,6 +32,6 @@
     overflow-x: auto;
   }
   figure {
-    border-bottom: 2px dashed red !important;
+    border-bottom: 0.5px solid gray !important;
   }
 }

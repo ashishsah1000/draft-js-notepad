@@ -19,8 +19,12 @@ function App() {
   };
   const saveDocument = () => {
     console.log("trying to save the document", title);
-    storeEditorDocumentTitle(title);
-    saveEditorStateToLocalStorage(editorState);
+    if (title.length > 0) {
+      storeEditorDocumentTitle(title);
+      saveEditorStateToLocalStorage(editorState);
+    } else {
+      alert("Please add a title");
+    }
   };
   const toggleDarkMode = () => {
     setdarkMode(() => !darkMode);

@@ -324,7 +324,10 @@ export default function MyEditor({ updateMainState = () => {} }) {
             id=""
             placeholder="Title of the document..."
             className="sm:text-2xl md:text-3xl outline-none text-gray-700 dark:text-gray-400 dark:bg-gray-950 font-extrabold uppercase w-full"
-            onChange={(e) => settitle(e.target.value)}
+            onChange={(e) => {
+              settitle(() => e.target.value);
+              updateMainState(editorState, title);
+            }}
             defaultValue={title.length > 0 ? title : ""}
           />
         </div>
@@ -380,12 +383,12 @@ export default function MyEditor({ updateMainState = () => {} }) {
             >
               <AiOutlineLine size={20} />
             </button>
-            <button
+            {/* <button
               className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
               onClick={() => convertToFancy(editorState)}
             >
               <AiTwotoneWarning size={20} />
-            </button>
+            </button> */}
           </div>
         </div>
 
