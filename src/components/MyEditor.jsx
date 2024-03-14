@@ -107,20 +107,23 @@ export default function MyEditor({ updateMainState = () => {} }) {
     setEditorState(RichUtils.toggleInlineStyle(editorState, "ITALIC"));
   }
   const convertToFancy = (newEditorState) => {
-    if (!flag) {
-      setFlag(() => true);
-      console.log("setting redfont");
-      setEditorState(() =>
-        RichUtils.toggleInlineStyle(newEditorState, "REDFONT")
-      );
-    } else {
-      setFlag(() => false);
-      console.log("setting blackfont");
+    setEditorState(() =>
+      RichUtils.toggleInlineStyle(newEditorState, "REDFONT")
+    );
+    // if (!flag) {
+    //   setFlag(() => true);
+    //   console.log("setting redfont");
+    //   setEditorState(() =>
+    //     RichUtils.toggleInlineStyle(newEditorState, "REDFONT")
+    //   );
+    // } else {
+    //   setFlag(() => false);
+    //   console.log("setting blackfont");
 
-      setEditorState(() =>
-        RichUtils.toggleInlineStyle(newEditorState, "BLACKFONT")
-      );
-    }
+    //   setEditorState(() =>
+    //     RichUtils.toggleInlineStyle(newEditorState, "BLACKFONT")
+    //   );
+    // }
     // setEditorState(RichUtils.toggleBlockType(editorState, "header-one"));
   };
   function setNewBlock() {
@@ -314,6 +317,8 @@ export default function MyEditor({ updateMainState = () => {} }) {
     }
   }, []);
 
+  const handleReturn = (e, currentEditor) => {};
+
   return (
     <div className="sm:w-[95w] md:w-[80vw] h-[90vh] m-auto  p-4 rounded mt-20 ">
       <div className="mt-4 h-full p-2 flex flex-col">
@@ -403,7 +408,7 @@ export default function MyEditor({ updateMainState = () => {} }) {
             onChange={handleInputChange}
             customStyleMap={styleMap}
             placeholder="Start writing here"
-            // handleReturn={handleReturn}
+            handleReturn={handleReturn}
           />
         </div>
       </div>
