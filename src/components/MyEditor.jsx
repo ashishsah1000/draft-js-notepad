@@ -392,7 +392,8 @@ export default function MyEditor({ updateMainState = () => {} }) {
         </div>
 
         <div className="mt-8 h-[60vh]  overflow-y-scroll " style={{
-          color:"green"
+          color:"green",
+          all:"revert !important"
         }}>
           <Editor
             editorState={editorState}
