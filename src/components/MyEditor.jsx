@@ -243,24 +243,22 @@ export default function MyEditor({ updateMainState = () => {} }) {
 
     let redLineIndex = blockText.indexOf("** ");
     if (redLineIndex > -1) {
+      selectionState.set("focusOffset", end - 2);
       const newContentState = Modifier.replaceText(
         editorState.getCurrentContent(),
         selectionState.merge({
-          anchorOffset: 0,
-          focusOffset: 3,
+          anchorOffset: redLineIndex,
+          focusOffset: redLineIndex + 4,
         }),
-        " "
+        ""
       );
       const newFormatedEditorState = EditorState.push(
         editorState,
         newContentState,
-        "remove-text"
+        "remove-range"
       );
       setEditorState(() => newFormatedEditorState);
-      // addRedLine();
-     // headingFormater(contentState, selectionState);
-
-      // addDivWithBorder(headingFormater(contentState, selectionState));
+  
       convertToFancy(newFormatedEditorState);
     }
     // handle for a single *
