@@ -16,7 +16,7 @@ import {
   AiOutlineOrderedList,
   AiOutlineUnderline,
   AiOutlineUnorderedList,
-  AiTwotoneWarning 
+  AiTwotoneWarning,
 } from "react-icons/ai";
 import { LuHeading1 } from "react-icons/lu";
 import {
@@ -28,7 +28,7 @@ export default function MyEditor({ updateMainState = () => {} }) {
   const [editorState, setEditorState] = React.useState(() =>
     EditorState.createEmpty()
   );
-  const [flag,setFlag] = useState(false)
+  const [flag, setFlag] = useState(false);
   const styleMap = {
     STRIKETHROUGH: {
       textDecoration: "line-through",
@@ -40,14 +40,10 @@ export default function MyEditor({ updateMainState = () => {} }) {
       paddingTop: "8px",
     },
     REDFONT: {
-      color: "red !important",
-      border:"2px solid yellow",
-      padding:"4px 4px"
+      color: "red", // Ensuring higher specificity
     },
     BLACKFONT: {
-      color: "text-red-100",
-      border:"2px solid green",
-      padding:"4px 4px"
+      color: "gray", // Ensuring higher specificity
     },
   };
   const [blockKey, setblockKey] = React.useState(null);
@@ -112,14 +108,14 @@ export default function MyEditor({ updateMainState = () => {} }) {
   }
   const convertToFancy = (newEditorState) => {
     if (!flag) {
-      setFlag(()=>true)
-      console.log("setting redfont")
+      setFlag(() => true);
+      console.log("setting redfont");
       setEditorState(() =>
         RichUtils.toggleInlineStyle(newEditorState, "REDFONT")
       );
     } else {
-      setFlag(()=>false)
-      console.log("setting blackfont")
+      setFlag(() => false);
+      console.log("setting blackfont");
 
       setEditorState(() =>
         RichUtils.toggleInlineStyle(newEditorState, "BLACKFONT")
@@ -262,7 +258,7 @@ export default function MyEditor({ updateMainState = () => {} }) {
         "remove-range"
       );
       setEditorState(() => newFormatedEditorState);
-  
+
       convertToFancy(newFormatedEditorState);
     }
     // handle for a single *
@@ -388,14 +384,17 @@ export default function MyEditor({ updateMainState = () => {} }) {
               className="px-2 py-1 text-xs hover:shadow rounded  text-gray-500 font-bold"
               onClick={() => convertToFancy(editorState)}
             >
-              <AiTwotoneWarning  size={20} />
+              <AiTwotoneWarning size={20} />
             </button>
           </div>
         </div>
 
-        <div className="mt-8 h-[60vh]  overflow-y-scroll " style={{
-          all:"revert !important"
-        }}>
+        <div
+          className="mt-8 h-[60vh]  overflow-y-scroll text-gray-400 "
+          style={{
+            all: "revert !important",
+          }}
+        >
           <Editor
             editorState={editorState}
             onChange={handleInputChange}
