@@ -27,6 +27,7 @@ export default function MyEditor({ updateMainState = () => {} }) {
   const [editorState, setEditorState] = React.useState(() =>
     EditorState.createEmpty()
   );
+  let flag= false;
   const styleMap = {
     STRIKETHROUGH: {
       textDecoration: "line-through",
@@ -36,6 +37,12 @@ export default function MyEditor({ updateMainState = () => {} }) {
       display: "block",
       width: "100% !important",
       paddingTop: "8px",
+    },
+    REDFONT: {
+      color: "red !important",
+    },
+    BLACKFONT: {
+      color: "grey !important",
     },
   };
   const [blockKey, setblockKey] = React.useState(null);
@@ -98,6 +105,20 @@ export default function MyEditor({ updateMainState = () => {} }) {
   function setFontToItalic() {
     setEditorState(RichUtils.toggleInlineStyle(editorState, "ITALIC"));
   }
+  const convertToFancy = () => {
+    if (!flag) {
+      flag = true;
+      setEditorState((editorState) =>
+        RichUtils.toggleInlineStyle(editorState, "REDFONT")
+      );
+    } else {
+      flag = false;
+      setEditorState((editorState) =>
+        RichUtils.toggleInlineStyle(editorState, "BLACKFONT")
+      );
+    }
+    // setEditorState(RichUtils.toggleBlockType(editorState, "header-one"));
+  };
   function setNewBlock() {
     const contentState = editorState.getCurrentContent();
     const selectionState = editorState.getSelection();
@@ -233,9 +254,10 @@ export default function MyEditor({ updateMainState = () => {} }) {
       );
       setEditorState(() => newFormatedEditorState);
       // addRedLine();
-      headingFormater(contentState, selectionState);
+     // headingFormater(contentState, selectionState);
 
-      addDivWithBorder(headingFormater(contentState, selectionState));
+      // addDivWithBorder(headingFormater(contentState, selectionState));
+      convertToFancy();
     }
     // handle for a single *
     let underlineIndex = blockText.indexOf("*** ");
@@ -359,7 +381,9 @@ export default function MyEditor({ updateMainState = () => {} }) {
           </div>
         </div>
 
-        <div className="mt-8 h-[60vh]  overflow-y-scroll ">
+        <div className="mt-8 h-[60vh]  overflow-y-scroll " style={{
+          color:"gray"
+        }}>
           <Editor
             editorState={editorState}
             onChange={handleInputChange}
