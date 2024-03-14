@@ -45,7 +45,7 @@ export default function MyEditor({ updateMainState = () => {} }) {
       padding:"4px 4px"
     },
     BLACKFONT: {
-      color: "grey !important",
+      color: "text-red-100",
       border:"2px solid green",
       padding:"4px 4px"
     },
