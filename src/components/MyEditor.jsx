@@ -319,7 +319,7 @@ export default function MyEditor({ updateMainState = () => {} }) {
   }, []);
 
   return (
-    <div className="sm:w-[95w] md:w-[80vw] h-[90vh] m-auto  p-4 rounded mt-20 text-gray-500 dark:text-gray-300">
+    <div className="sm:w-[95w] md:w-[80vw] h-[90vh] m-auto  p-4 rounded mt-20 ">
       <div className="mt-4 h-full p-2 flex flex-col">
         <div className="heading my-4">
           <input
