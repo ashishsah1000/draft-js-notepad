@@ -28,7 +28,7 @@ export default function MyEditor({ updateMainState = () => {} }) {
   const [editorState, setEditorState] = React.useState(() =>
     EditorState.createEmpty()
   );
-  let flag= false;
+  const [flag,setFlag] = useState(false)
   const styleMap = {
     STRIKETHROUGH: {
       textDecoration: "line-through",
@@ -41,9 +41,13 @@ export default function MyEditor({ updateMainState = () => {} }) {
     },
     REDFONT: {
       color: "red !important",
+      border:"2px solid yellow",
+      padding:"4px 4px"
     },
     BLACKFONT: {
       color: "grey !important",
+      border:"2px solid green",
+      padding:"4px 4px"
     },
   };
   const [blockKey, setblockKey] = React.useState(null);
@@ -108,13 +112,13 @@ export default function MyEditor({ updateMainState = () => {} }) {
   }
   const convertToFancy = (newEditorState) => {
     if (!flag) {
-      flag = true;
+      setFlag(()=>true)
       console.log("setting redfont")
       setEditorState(() =>
         RichUtils.toggleInlineStyle(newEditorState, "REDFONT")
       );
     } else {
-      flag = false;
+      setFlag(()=>false)
       console.log("setting blackfont")
 
       setEditorState(() =>
