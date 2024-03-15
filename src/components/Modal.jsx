@@ -44,8 +44,8 @@ function Modal({ isOpen, onClose }) {
             </div>
             <div className="flex justify-center items-center gap-2">
               <pre>'** '</pre>
-              <span className=" border-b-2 border-pink-600">
-                Add a red line (insert character after using this)
+              <span className="  text-pink-600 font-bold">
+                Add a red line (Add red font)
               </span>
             </div>
             <div className="flex justify-center items-center gap-2">
@@ -56,7 +56,9 @@ function Modal({ isOpen, onClose }) {
             </div>
             <div className="flex justify-center items-center gap-2">
               <pre>'``` '</pre>
-              <span className="">Code-block (reuse to stop the underline)</span>
+              <span className="">
+                Code-block (reuse to stop the code block)
+              </span>
             </div>
           </div>
         </div>
